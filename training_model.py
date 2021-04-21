@@ -1,25 +1,25 @@
 import pandas as pd
 from sklearn import linear_model
 import numpy as np
+from pathlib import Path
+import pyinputplus as pyip
 
-training_dataset = pd.read_csv("downloads/All5.csv")
+columns = ["double", "speed", "length", "Asym"]
 
-print ("Training model...")
-regression_model = linear_model.LinearRegression() 
-X = training_dataset[['double', 'speed','length', 'Asym']]
-Y = training_dataset['sourceName']
-regression_model.fit(X, Y) 
-a = np.array([])
-for key, value in training_dataset:
+training_dataset = pd.read_csv(Path("./DadDoubleSupport - AiDadMom-2.csv"))
 
-    a = a + (i['sourceName'])
-    a = a + (i['double'])
-print(np.std(a))
-print ("Model trained.")
+print("Training model...")
+regression_model = linear_model.LinearRegression()
+X = training_dataset[columns]
+Y = training_dataset["sourceName"]
+regression_model.fit(X, Y)
+print("Model trained.")
 
-input_list = []
-for x in ("first", "second", "third", "fourth"):
-    input_area = float(input(f"Enter {x}: "))
-    input_list.append(input_area)
-proped_price = regression_model.predict([input_list])
-print ("Proped price:", round(proped_price[0], 2))
+std_devs = {a: np.std(training_dataset[a]) for a in ("sourceName", "double")}
+print(f"Standard deviations: {std_devs}")
+
+input_list = [pyip.inputNum(f"Input {prompt}: ") for prompt in columns]
+pred_price = regression_model.predict([input_list])
+has_parkinsons = True if pred_price[0] > 1.5 else False
+print(f"Has Parkinsons: {has_parkinsons}")
+print("Predicted price:", round(pred_price[0], 2))
