@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
+import pickle
 
 
 def clean_df():
@@ -108,6 +109,13 @@ def show_pred_real(test_features, test_labels, predictions):
     return combined_df
 
 
+def save_model(rf):
+    if input("save? y/n ").lower().strip() == "y":
+        pickle.dump(rf, open("model.sav", "wb"))
+    else:
+        print("not saved")
+
+
 if __name__ == "__main__":
 
     (
@@ -126,3 +134,5 @@ if __name__ == "__main__":
     )
 
     errors = show_metrics(predictions, test_labels, feature_list)
+
+    save_model(rf)
