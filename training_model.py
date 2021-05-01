@@ -33,9 +33,8 @@ real_y = test_df["sourceName"]
 assert len(pred_y) == len(real_y), "Must have same number of predictions"
 print(f"performance (r2) score: {r2_score(real_y, pred_y)}")
 
-if False:
-    input_list = [pyip.inputNum(f"Input {prompt}: ") for prompt in columns]
-    pred_price = regression_model.predict([input_list])
-    has_parkinsons = True if pred_price[0] > 1.5 else False
-    print(f"Has Parkinsons: {has_parkinsons}")
-    print("Predicted price:", round(pred_price[0], 2))
+input_list = [pyip.inputNum(f"Input {prompt}: ") for prompt in columns]
+pred_price = regression_model.predict([input_list])
+has_parkinsons = True if pred_price[0] > 1.5 else False
+print(f"Has Parkinsons: {has_parkinsons}")
+print("Predicted price:", round(pred_price[0], 2))
