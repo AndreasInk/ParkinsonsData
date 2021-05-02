@@ -27,49 +27,37 @@ def load_classifier_model():
     return model
 
 
-@app.get("/regression/single/")
-def single_reg(double: float, speed: float, length: float):
+@app.get("/single/")
+def single_pred(double: float, speed: float, length: float):
     """
     Make single prediction with query parameters
     ex: localhost:8000/?double=1&speed=2&length=30
-    prediction: predicted 0 if no parkinsons, 1 if parkinsons
-    predicted_parkinsons: true if closer to 1 (> 0.5)
+    predicted 0 if no parkinsons, 1 if parkinsons
     """
     inputs = [double, speed, length]
-    model = load_regression_model()
-    prediction = model.predict([inputs])[0]
-    has_parkinsons = 1 if prediction > 0.5 else 0
-    return {"prediction": prediction, "predicted_parkinsons": has_parkinsons}
+    reg_model = load_regression_model()
+    class_model = load_classifier_model()
+
+    reg_pred = reg_model.predict([inputs])[0]
+    class_pred = class_model.predict([inputs])[0]
+    return {
+        "regression_prediction": float(reg_pred),
+        "classification_prediction": int(class_pred),
+    }
 
 
-# @app.post("/regression")
-# def multi_reg(item: MultipleInputs):
-#     inputs = [item.double, item.speed, item.length]
-#     model = load_regression_model()
-#     predictions = model.predict([inputs])
-#     has_parkinsons = True if predictions > 0.5 else False
-#     return {"predictions": predictions, "predicted_parkinsons": has_parkinsons}
+@app.post("/")
+def multi_reg(item: MultipleInputs):
+    # reshape inputs
+    model_input = []
+    for d, s, l in zip(item.double, item.speed, item.length):
+        model_input.append([d, s, l])
+    reg_model = load_regression_model()
+    class_model = load_classifier_model()
 
-
-@app.get("/classification/single/")
-def single_class(double: float, speed: float, length: float):
-    """
-    Make single classification prediction with query parameters
-    ex: localhost:8000/?double=1&speed=2&length=30
-    prediction: predicted 0 if no parkinsons, 1 if parkinsons
-    """
-    inputs = [double, speed, length]
-    model = load_classifier_model()
-    prediction = model.predict([inputs])[0]
-    return {"prediction": int(prediction)}
-
-
-# @app.get("/classification")
-# def multi_class(item: MultipleInputs):
-#     inputs = [item.double, item.speed, item.length]
-#     model = load_classifier_model()
-#     predictions = model.predict([inputs])
-#     return {"predictions": predictions}
-
-
-# to run: uvicorn api:app --reload
+    reg_pred = reg_model.predict(model_input)
+    class_pred = class_model.predict(model_input)
+    return {
+        "regression_predictions": [float(i) for i in list(reg_pred)],
+        "classification_predictions": [int(i) for i in list(class_pred)],
+    }
