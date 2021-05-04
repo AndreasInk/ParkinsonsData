@@ -1,6 +1,7 @@
 fastapi
 uvicorn
-sklearn
 pandas
+scikit-learn==0.19.2
 numpy
 pyinputplus
+coremltools

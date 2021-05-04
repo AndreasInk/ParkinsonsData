@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from pathlib import Path
 import pickle
+import coremltools
 
 
 def clean_df():
@@ -21,7 +22,8 @@ def clean_df():
     df.head()
 
     # remove target from df and move into its own list
-    labels = np.array(df["sourceName"])
+    target_column = "sourceName"
+    labels = np.array(df[target_column])
     feature_list = [i for i in list(df.columns) if i != "sourceName"]
     df.drop(["sourceName"], axis=1, inplace=True)
     df.head()
@@ -43,6 +45,7 @@ def clean_df():
         pd_df,
         labels,
         feature_list,
+        target_column,
     )
 
 
@@ -136,10 +139,20 @@ def show_metrics(
     get_importances(class_model, "classification")
 
 
-def save_models(reg_model, class_model):
+def save_models(reg_model, class_model, feature_list, target_column):
+    def save_apple(model, filename):
+        # NOTE: coremltools requires sklearn 0.19.2 or below
+        output = coremltools.converters.sklearn.convert(
+            model, feature_list, target_column
+        )
+        output.save(filename)
+        return output
+
     if input("save? y/n ").lower().strip() == "y":
         pickle.dump(reg_model, open(Path("models/reg_model.sav"), "wb"))
+        save_apple(reg_model, Path("models/reg_model.mlmodel"))
         pickle.dump(class_model, open(Path("models/class_model.sav"), "wb"))
+        save_apple(class_model, Path("models/class_model.mlmodel"))
         print("saved 2 models")
     else:
         print("not saved")
@@ -156,6 +169,7 @@ if __name__ == "__main__":
         pd_df,
         labels,
         feature_list,
+        target_column,
     ) = clean_df()
 
     reg_model, reg_pred, class_model, class_pred = train_model(
@@ -172,4 +186,4 @@ if __name__ == "__main__":
         class_model,
     )
 
-    save_models(reg_model, class_model)
+    save_models(reg_model, class_model, feature_list, target_column)
